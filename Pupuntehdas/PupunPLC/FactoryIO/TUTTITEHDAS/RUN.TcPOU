@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="RUN" Id="{769542ca-3905-4ab0-bbef-28b6ff588ae5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK RUN
+VAR_INPUT
+	IN:		BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	Q :		 BOOL;
+	PWR_LIGHT1 :BOOL;
+	Emitter1 :	BOOL;
+	LIGHT0:		BOOL;
+	LIGHT1:		BOOL;
+	LIGHT2:		BOOL;
+	LIGHT3:		BOOL;
+	LIGHT4:		BOOL;
+	LIGHT5:		BOOL;
+	LIGHT6:		BOOL;
+	LIGHT7:		BOOL;
+	
+END_VAR
+VAR
+	iState: 	INT;
+	fbTON : 	TON;
+	WaitTime :	TIME := T#1000MS;
+	iNextState: INT;
+	iStateHeartBeat: INT;
+	Run_It: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//home-made R_TRIG. No stop-button yet though
+IF IN = TRUE AND Run_It = FALSE THEN
+	Run_It := IN;
+END_IF
+
+IF Run_It THEN
+	PWR_LIGHT1 := 	TRUE;
+	Q := 			TRUE;
+	Emitter1 :=		TRUE;
+END_IF
+
+
+CASE iState OF
+		0: //IDLE
+			LIGHT0 := FALSE;
+			LIGHT1 := FALSE;
+			LIGHT2 := FALSE;
+			LIGHT3 := FALSE;
+			LIGHT4 := FALSE;
+			LIGHT5 := FALSE;
+			LIGHT6 := FALSE;
+			LIGHT7 := FALSE;
+			iStateHeartBeat := iStateHeartBeat+1;
+			IF Q THEN 
+				iState := 10;
+			END_IF
+		10:	
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT1 := TRUE;
+				LIGHT0 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		11:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT2 := TRUE;
+				LIGHT1 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		12:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT3 := TRUE;
+				LIGHT2 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		13:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT4 := TRUE;
+				LIGHT3 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		14:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT5 := TRUE;
+				LIGHT4 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		15:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT6 := TRUE;
+				LIGHT5 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		16:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT7 := TRUE;
+				LIGHT6 := FALSE;
+				iState := iState+1;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		17:
+			fbTON(IN:= TRUE, PT:= WaitTime);
+			IF fbTON.Q THEN
+				fbTON(IN := FALSE);
+				LIGHT0 := TRUE;
+				LIGHT7 := FALSE;
+				iState := 10;
+				iStateHeartBeat := iStateHeartBeat+1;
+			END_IF
+		END_CASE
+
+
+//Ei toiminu, yritin ARRAYlla ja BYTEllä kontrolloida FOR i tyylillä valoja mutta parempi luovuttaa tältä erää
+//		fbTON(IN:= TRUE, PT:= WaitTime);
+//		IF fbTON.Q THEN
+//		fbTON(IN := FALSE);
+//			fbTON2(IN := TRUE, PT := WaitLights);
+
+//			IF fbTON2.Q THEN
+//				byLIGHT.i := TRUE;
+//				//aLight[i-1] := FALSE;		//kokeillaas hiukan myöhemmin
+//				i := i+1;
+//				IF i > 7 THEN
+//					i := 0;
+//				END_IF
+//				fbTON2(IN := FALSE);
+//			END_IF
+//		END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="RUN">
+      <LineId Id="1010" Count="7" />
+      <LineId Id="1127" Count="0" />
+      <LineId Id="1018" Count="106" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

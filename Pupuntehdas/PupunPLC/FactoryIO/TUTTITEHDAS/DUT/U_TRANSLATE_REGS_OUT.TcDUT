@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <DUT Name="U_TRANSLATE_REGS_OUT" Id="{08c0e104-e582-481c-b13b-88726cff1345}">
+    <Declaration><![CDATA[TYPE U_TRANSLATE_REGS_OUT :
+UNION
+	nArray :	ARRAY [0..31] OF WORD;
+	Label :		S_REGS_OUT;
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

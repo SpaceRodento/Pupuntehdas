@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_CONVEYOR1" Id="{f4bb363f-4f2a-4ad4-928f-9320df7ced4a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CONVEYOR1
+VAR_INPUT
+	IN :		BOOL;	//When IN, then rollers and Q on
+END_VAR
+VAR_OUTPUT
+	Q :		BOOL;
+	ROLL1 :	BOOL;
+	ROLL2 :	BOOL;
+	ROLL3 :	BOOL;
+	ROLL4 :	BOOL;
+	ROLL5 :	BOOL;
+	ROLL6 :	BOOL;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT IN THEN
+	Q := FALSE;
+	ROLL1 := FALSE;
+	ROLL2 := FALSE;
+	ROLL3 := FALSE;
+	ROLL4 := FALSE;
+	ROLL5 := FALSE;
+	ROLL6 := FALSE;
+	ELSE
+		Q := 		TRUE;
+		ROLL1 := 	TRUE;
+		ROLL2 := 	TRUE;
+		ROLL3 := 	TRUE;
+		ROLL4 := 	TRUE;
+		ROLL5 := 	TRUE;
+		ROLL6 := 	TRUE;
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_CONVEYOR1">
+      <LineId Id="50" Count="2" />
+      <LineId Id="102" Count="2" />
+      <LineId Id="126" Count="1" />
+      <LineId Id="53" Count="1" />
+      <LineId Id="105" Count="3" />
+      <LineId Id="124" Count="1" />
+      <LineId Id="55" Count="1" />
+      <LineId Id="17" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

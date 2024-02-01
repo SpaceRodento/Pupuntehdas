@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_TWO_AXIS_PICK" Id="{d1bf44e8-a22e-4638-90e2-c7c3879a2ca5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TWO_AXIS_PICK
+VAR_INPUT
+	IN :	BOOL;
+	PartReadyForPickup :	BOOL;	//Signal from other device
+	PalletReady :	BOOL;			//Capacitive sensor looking for pallet in place
+	PartDetected :	BOOL;			//Grabber sensor when part is near
+	X_Position :	WORD;
+	Z_Position :	WORD;
+	
+END_VAR
+VAR_OUTPUT
+	Q :			BOOL;
+	AllClear :	BOOL;
+	Busy :		BOOL;
+	SetX :		WORD;
+	SetZ :		WORD;
+	Grab :		BOOL;
+	PartCount :		WORD;
+	Roller :	BOOL;
+
+	
+END_VAR
+VAR
+	iState: INT;
+	fbTON: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := TRUE;	
+END_IF
+
+CASE iState OF
+	0 : //idle
+	IF Q THEN
+		iState := 10;
+	END_IF
+	10 : //waiting for stuff
+		AllClear := TRUE;
+		Busy := FALSE;
+		SetX := 1000;
+		SetZ := 200;
+
+		IF NOT PalletReady THEN
+		Roller :=	TRUE;
+		ELSE
+			Roller := FALSE;
+		END_IF
+		IF PartReadyForPickup THEN
+			AllClear := FALSE;
+		END_IF
+		IF PartReadyForPickup AND PalletReady AND X_Position > 700 THEN
+			iState := 11;
+		END_IF
+	11 :
+		IF PartReadyForPickup THEN
+		Busy := 	TRUE;
+		AllClear := FALSE;
+		SetZ := 1000;
+		iState := 20;
+		END_IF
+	20 : //pick
+		IF PartDetected THEN
+		Grab := TRUE;
+		iState := 30;
+		END_IF
+	30 : //Raise
+		SetZ := 200;
+		iState := 40;
+	
+	40 : 
+		IF Z_Position < 300 THEN
+		SetX := 110;
+		iState := 50;
+		END_IF
+	50 : 
+		IF X_Position < 300 THEN
+		SetZ := 700;
+		iState := 60;
+		END_IF
+	60 :
+		IF Z_Position >650 THEN
+		Grab := FALSE;
+		fbTON(IN := TRUE, PT := T#200MS);
+			IF fbTON.Q THEN fbTON(IN := FALSE);
+			SetZ := 200;
+			iState := 70;
+			END_IF
+		END_IF
+	70 : 
+		IF Z_Position < 500 THEN
+		AllClear := TRUE;
+		iState := 	80;
+		END_IF
+	80 :
+		Roller := TRUE;
+		IF NOT PalletReady THEN
+		iState := 10;
+		END_IF
+	
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TWO_AXIS_PICK">
+      <LineId Id="250" Count="23" />
+      <LineId Id="323" Count="1" />
+      <LineId Id="274" Count="48" />
+      <LineId Id="31" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

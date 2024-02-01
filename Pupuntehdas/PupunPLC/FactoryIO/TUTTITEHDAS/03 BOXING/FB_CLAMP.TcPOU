@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_CLAMP" Id="{474c8400-8db1-463b-bf1e-da36c9477ff9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CLAMP
+VAR_INPUT
+	IN :	BOOL;
+	Clamped :	BOOL;
+	LimitUpDown :	BOOL;
+	VisiSensor :	WORD;
+	AllClear :			BOOL; 	//"All clear" -message from picker
+END_VAR
+VAR_OUTPUT
+	Q : 		BOOL;
+	StopBlade :	BOOL;
+	Clamp :		BOOL;
+	Raise :		BOOL;
+	ReadyForPickUp: BOOL;
+END_VAR
+VAR
+	iState: INT;
+	fbTON: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := TRUE;	
+END_IF
+
+CASE iState OF
+	0 : //idle
+	IF Q THEN
+		iState := 10;
+	END_IF
+	10 : //wait for something to CLAMP
+	IF VisiSensor = 0 THEN
+		StopBlade := FALSE;
+		ReadyForPickUp := FALSE;
+		ELSE
+			StopBlade := TRUE;
+			iState := 20;
+	END_IF
+	20 : //CLAMP CLAMP CLAMP!
+	fbTON(IN := TRUE, PT := T#500MS);
+	IF fbTON.Q THEN fbTON(IN := FALSE);
+		Clamp := TRUE;
+		iState := 30;
+	END_IF
+	30 : //UNCLAMP
+	IF Clamped THEN
+		Clamp := FALSE;
+		iState := 40;
+		ReadyForPickUp := TRUE;
+	END_IF
+	40 : //Wait for all clear
+	fbTON(IN := TRUE, PT := T#300MS);
+	IF AllClear AND fbTON.Q THEN fbTON(IN := FALSE);
+			StopBlade := FALSE;
+			iState := 10;
+	END_IF
+	
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_CLAMP">
+      <LineId Id="22" Count="4" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="34" Count="3" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="51" Count="1" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="59" Count="2" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="62" Count="1" />
+      <LineId Id="91" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

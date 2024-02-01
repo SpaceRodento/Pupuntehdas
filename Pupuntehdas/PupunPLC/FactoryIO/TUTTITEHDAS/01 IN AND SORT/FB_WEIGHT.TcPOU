@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_WEIGHT" Id="{610fca25-ab0e-4873-9792-4a0978fccc94}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WEIGHT
+VAR_INPUT
+	IN :	BOOL;
+	Run :	BOOL;
+	nWeight :		WORD;
+	nSetWeightA : 	WORD := 400;
+	nSetWeightB : 	WORD := 600;
+	PusherFrontLimit : 	BOOL;
+	PusherBackLimit :	BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	Q :		BOOL;
+	Status : INT;
+	Go :	BOOL;		//Pusher etc. that reacts to weight
+	ConveyorPlus : 	BOOL;
+	ConveyorMinus :	BOOL;
+	StopBlade :		BOOL;
+	Pusher :		BOOL;
+END_VAR
+VAR
+	iState: INT;
+	fbTON: TON;
+	fbTON2: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := TRUE;
+END_IF
+
+Status := iState;
+
+CASE iState OF
+	0 : //Idle
+	IF NOT Q THEN
+	ConveyorPlus := 	FALSE;
+	StopBlade :=		FALSE;
+	ELSE
+		iState :=			10;
+	END_IF
+	
+	10 : //Feeding in
+	ConveyorPlus := 	TRUE;
+	Pusher := 			FALSE;
+	IF nWeight > 100 THEN
+		StopBlade :=		TRUE;
+		fbTON(IN := TRUE, PT := T#1500MS);
+		IF fbTON.Q THEN fbTON(IN := FALSE);
+			ConveyorPlus :=		FALSE;
+			iState :=			20;
+		END_IF		
+	END_IF
+	
+	20 : //JUDGING THE SINNERS ACCORDING TO THEIR WEIGHT
+	fbTON2(IN := TRUE, PT := T#100MS);
+	IF fbTON2.Q THEN fbTON2(IN := FALSE);
+		IF nWeight > nSetWeightA AND nWeight < nSetWeightB THEN
+			Pusher := 	TRUE;
+			Go :=		TRUE;
+			iState := 	30;
+		END_IF
+	END_IF
+	
+	30 : 
+	fbTON2(IN := TRUE, PT := T#100MS);
+	IF fbTON2.Q THEN fbTON2(IN := FALSE);
+		Go :=		FALSE;
+		IF PusherFrontLimit THEN
+		Pusher := 	FALSE;
+		StopBlade := FALSE;
+		iState :=	40;
+		END_IF
+	END_IF
+
+	40 :	//waiting for scale to clear
+	IF PusherBackLimit THEN
+		iState := 10;
+	END_IF
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_WEIGHT">
+      <LineId Id="182" Count="10" />
+      <LineId Id="194" Count="3" />
+      <LineId Id="199" Count="1" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="202" Count="7" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="210" Count="4" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="266" Count="0" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="282" Count="1" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="310" Count="0" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="284" Count="0" />
+      <LineId Id="280" Count="0" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="224" Count="2" />
+      <LineId Id="39" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <DUT Name="S_REGS_OUT" Id="{eb93f012-d7cb-4bc0-bf69-c8d3e5c34390}">
+    <Declaration><![CDATA[TYPE S_REGS_OUT :
+STRUCT
+	
+//==== MEMORY REGISTERS OUT			
+nSetPickPlace1_X	:		WORD;
+nSetPickPlace1_Y	:		WORD;
+nSetPickPlace1_Z	:		WORD;
+nRFID1_CodeAssign	:		WORD;
+nRFID1_Command	:			WORD;
+nRFID1_WriteData	:		WORD;
+nRFID1_MemIndex	:			WORD;
+nTwoAxisPick1_SetX	:		WORD;
+nTwoAxisPick1_SetZ	:		WORD;
+nDisplayPartCount	:		WORD;
+nMemout10	:				WORD;
+Disp_XCell	:				WORD;
+Disp_ZCell	:				WORD;
+Disp_XCellCoords	:		WORD;
+Disp_ZCellCoords	:		WORD;
+Stacker1_SETX	:		WORD;
+Stacker1_SETZ	:		WORD;
+nMemOut17	:		WORD;
+nMemOut18	:		WORD;
+nMemOut19	:		WORD;
+nMemOut20	:		WORD;
+nMemOut21	:		WORD;
+nMemOut22	:		WORD;
+nMemOut23	:		WORD;
+nMemOut24	:		WORD;
+nMemOut25	:		WORD;
+nMemOut26	:		WORD;
+nMemOut27	:		WORD;
+nMemOut28	:		WORD;
+nMemOut29	:		WORD;
+nMemOut30	:		WORD;
+nMemOut31	:		WORD;
+nMemOut32	:		WORD;
+
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

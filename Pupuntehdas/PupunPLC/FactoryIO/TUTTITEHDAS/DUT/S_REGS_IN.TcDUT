@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <DUT Name="S_REGS_IN" Id="{3234f9b8-5210-4102-b6db-e7979c7b082d}">
+    <Declaration><![CDATA[TYPE S_REGS_IN :
+STRUCT
+
+//==== MEMORY REGISTERS IN				
+nPickPlace1_X	:		WORD;	
+nPickPlace1_Y	:		WORD;	
+nPickPlace1_Z	:		WORD;	
+nConveyorScaleWeight1 :	WORD;	
+nRFID1_Status	:		WORD;	
+nRFID1_ReadData	:		WORD;	
+nRFID1_CommandID:		WORD;	
+nTwoAxisPick1_X	:		WORD;	
+nTwoAxisPick1_Z	:		WORD;	
+nVisionSensor1_Value:	WORD;	
+Stacker1_XPos	:		WORD;	
+Stacker1_ZPos	:		WORD;	
+nMemIn12	:		WORD;	
+nMemIn13	:		WORD;	
+nMemIn14	:		WORD;	
+nMemIn15	:		WORD;	
+nMemIn16	:		WORD;	
+nMemIn17	:		WORD;	
+nMemIn18	:		WORD;	
+nMemIn19	:		WORD;	
+nMemIn20	:		WORD;	
+nMemIn21	:		WORD;	
+nMemIn22	:		WORD;	
+nMemIn23	:		WORD;	
+nMemIn24	:		WORD;	
+nMemIn25	:		WORD;	
+nMemIn26	:		WORD;	
+nMemIn27	:		WORD;	
+nMemIn28	:		WORD;	
+nMemIn29	:		WORD;	
+nMemIn30	:		WORD;	
+nMemIn31	:		WORD;	
+nMemIn32	:		WORD;	
+
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

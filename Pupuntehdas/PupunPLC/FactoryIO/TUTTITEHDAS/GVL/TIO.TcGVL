@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <GVL Name="TIO" Id="{711d9415-bc7f-4838-865d-2d8c5e91e393}">
+    <Declaration><![CDATA[//{attribute 'qualified_only'}
+VAR_GLOBAL
+	//Factory IO
+	FIN 	AT %I* 		: 	U_TRANSLATE_IN;  		//Inputit 0-15 Factory IO
+	FOUT 	AT %Q*		: 	U_TRANSLATE_OUT;		//Outputit 0-15 Factory IO
+	FMIN 	AT %MB0 	: 	U_TRANSLATE_REGS_IN; 	//Register In Factory IO
+	FMOUT 	AT %MB64	: 	U_TRANSLATE_REGS_OUT;	//Register Out Factory IO
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

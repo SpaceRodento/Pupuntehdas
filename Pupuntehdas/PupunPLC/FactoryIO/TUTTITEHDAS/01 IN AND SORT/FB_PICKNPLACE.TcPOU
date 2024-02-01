@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_PICKNPLACE" Id="{2becc530-6df5-4689-8e00-d61a8109cd97}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PICKNPLACE
+VAR_INPUT
+	IN :		BOOL;	//Power/Main switch
+	Run : 		BOOL;	//Signal from previous state to start doing stuff
+	Sensor1 :	BOOL;	//Diff sensor placed at the height of box
+	MovingZ :	BOOL;
+	MovingXY :	BOOL;
+	BoxDetect :	BOOL;
+	nPosX :	WORD;
+	nPosY :	WORD;
+	nPosZ :	WORD;
+	
+END_VAR
+VAR_OUTPUT
+	Q :			BOOL;
+	Status: 	STRING;
+	Go :		BOOL;
+	
+	Infeed :		BOOL;	//Conveyor
+	Outfeed :		BOOL;	//Conveyor
+	Grab :		BOOL;
+	CPlus :		BOOL;
+	RegSetX :		WORD;
+	RegSetY : 		WORD;
+	RegSetZ :		WORD;	
+	
+END_VAR
+VAR
+	iState: INT;
+	fbTON : 	TON;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := TRUE;
+END_IF
+
+CASE iState OF
+	
+0: //idle
+	Status := 		'0 - Idle';
+	IF Q THEN
+		iState := 10;
+	END_IF
+10: //feed in
+	Status := 		'10 - Feed in';
+	Go :=			FALSE;
+	IF Run THEN
+		Infeed := 	TRUE;
+		iState := 	20;
+	END_IF
+20: //Align and stop
+	Status := 		'20 - Box in place, go fetch';
+	IF Sensor1 THEN
+		Infeed :=	FALSE;
+		RegSetX :=	850;
+		RegSetY :=	660;
+		RegSetZ :=	0; 	//1000;
+		iState := 	21;
+	END_IF
+21: //Go down
+	Status := 		'21 - Above the box, go pick it';
+	IF nPosX > 700 THEN
+		RegSetZ :=	1000;
+		iState := 	30;
+	END_IF
+30: //Grab it and go
+	Status := 		'30 - Box detected, grabbing';
+	IF BoxDetect THEN
+		Grab :=		TRUE;
+		//hold for little while
+		fbTON(IN := TRUE, PT := T#200MS);
+		IF fbTON.Q THEN
+			fbTON(IN := FALSE);
+			RegSetX :=	0;		//Over the outfeed conveyor
+			RegSetY :=	530;
+			RegSetZ :=	280;
+			Go :=		TRUE;
+			iState := 	40; 
+		END_IF
+	END_IF
+40: //Roll out
+	Status := 		'40 - Roll out';
+	IF NOT MovingXY AND NOT Sensor1 THEN
+ 	Grab := 	FALSE;
+	Infeed := 	TRUE;
+	Outfeed :=	TRUE;
+	iState := 	10;
+	END_IF
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PICKNPLACE">
+      <LineId Id="432" Count="30" />
+      <LineId Id="598" Count="2" />
+      <LineId Id="604" Count="1" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="463" Count="10" />
+      <LineId Id="596" Count="0" />
+      <LineId Id="474" Count="4" />
+      <LineId Id="593" Count="1" />
+      <LineId Id="480" Count="1" />
+      <LineId Id="483" Count="0" />
+      <LineId Id="595" Count="0" />
+      <LineId Id="485" Count="0" />
+      <LineId Id="75" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

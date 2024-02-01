@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FileVersion>1.0.0.0</FileVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{32d810cb-aece-43aa-a0fa-774799d69cba}</ProjectGuid>
+    <SubObjectsSortedByName>True</SubObjectsSortedByName>
+    <DownloadApplicationInfo>true</DownloadApplicationInfo>
+    <WriteProductVersion>true</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
+    <Name>PupunPLC</Name>
+    <ProgramVersion>3.1.4024.0</ProgramVersion>
+    <Application>{9e104fc0-5306-443b-9af3-0c681f34ebc3}</Application>
+    <TypeSystem>{fb53f444-6d27-46f6-a6ea-87ff0fc750ae}</TypeSystem>
+    <Implicit_Task_Info>{530c4247-1e73-42e1-b607-420e304c616c}</Implicit_Task_Info>
+    <Implicit_KindOfTask>{20e0ae3e-bab8-42fe-9194-0aa0b1e80a48}</Implicit_KindOfTask>
+    <Implicit_Jitter_Distribution>{6ebded6c-623a-4874-8885-1c0f6af555f9}</Implicit_Jitter_Distribution>
+    <LibraryReferences>{cf8bd5f1-272c-4227-8dd7-71f7e6e6f137}</LibraryReferences>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="FactoryIO\GVLs\GVL_Tutti.TcGVL">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\01 IN AND SORT\FB_PICKNPLACE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\01 IN AND SORT\FB_SPECIAL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\01 IN AND SORT\FB_TURNTABLE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\01 IN AND SORT\FB_WEIGHT.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\02 CNC\FB_CNC_MILL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\02 CNC\FB_WHEELSORT.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\03 BOXING\FB_CLAMP.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\03 BOXING\FB_SPECIAL_2.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\03 BOXING\FB_TWO_AXIS_PICK.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\04 STORAGE\FB_STACKER.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\CONVEYORS\FB_CONVEYOR1.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\S_NAMES_IN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\S_NAMES_OUT.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\S_REGS_IN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\S_REGS_OUT.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\U_TRANSLATE_IN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\U_TRANSLATE_OUT.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\U_TRANSLATE_REGS_IN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\DUT\U_TRANSLATE_REGS_OUT.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\FBD_TUTTILINJASTO.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\GVL\TIO.TcGVL">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\MAIN_TUTTI.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FactoryIO\TUTTITEHDAS\RUN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GVLs\GVL.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="PlcTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DUTs" />
+    <Folder Include="FactoryIO" />
+    <Folder Include="FactoryIO\GVLs" />
+    <Folder Include="FactoryIO\TUTTITEHDAS" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\01 IN AND SORT" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\02 CNC" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\03 BOXING" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\04 STORAGE" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\CONVEYORS" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\DUT" />
+    <Folder Include="FactoryIO\TUTTITEHDAS\GVL" />
+    <Folder Include="GVLs" />
+    <Folder Include="VISUs" />
+    <Folder Include="POUs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PupunPLC.tmc">
+      <SubType>Content</SubType>
+    </None>
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" />
+      <d n="Values" t="Hashtable" />
+    </o>
+        </Data>
+        <TypeList>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
+    </PlcProjectOptions>
+  </ProjectExtensions>
+</Project>

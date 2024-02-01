@@ -1,0 +1,279 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="MAIN_TUTTI" Id="{45e393e3-7bea-4d24-a073-d5695c3f5e1b}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN_TUTTI
+VAR
+	iState: 		INT;	
+	iStateName: 	STRING(INT#80);
+	iNextState: 	INT;	
+//Heartbeats
+	iStateHeartBeat: 	DINT;
+	TEMP_COUNT: 		DINT;
+	ModbusHeartBeat: 	DINT;
+
+//timers
+	fbTON1:			TON;
+	tStateWait:		TIME := T#0MS;	//TON PT wait duration
+	
+//Trigs
+	rTRIG:			R_TRIG;
+	fTRIG:			F_TRIG;
+	
+	TEMP_TRIG: BOOL;
+
+//Just Modbus Stuff
+	ipAddr    : 	STRING(18) := '192.168.0.109';
+	bModbusBusy1: 	BOOL;
+	bModbusBusy2: 	BOOL;
+	bModbusBusy3: 	BOOL;
+	bModbusBusy4:	BOOL;
+	fbMBReadInputs: 	FB_MBReadInputs;
+	fbMBWriteCoils : 	FB_MBWriteCoils;
+	fbMBWriteRegs : 	FB_MBWriteRegs;
+	fbMBReadInputRegs : FB_MBReadInputRegs;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+ CASE iState OF
+	0:	//Idle state
+	iStateName := 'Idle state';
+	iNextState := 10;
+
+	fbTON1(	IN:=TRUE,	PT:= tStateWait);
+	IF fbTON1.Q THEN
+	fbTON1(IN := FALSE);
+		//When timer clicks, do once:
+		iStateHeartBeat := iStateHeartBeat+1;
+		iState := iNextState;
+	END_IF
+	
+	10:	//READ MODBUS
+	iStateName := '10, Read Modbus';
+	iNextState := 20;
+	fbTON1(	IN:=TRUE,	PT:= tStateWait);
+	IF fbTON1.Q THEN
+	fbTON1(IN := FALSE);
+		//When timer clicks, do once:
+
+		MAIN_TUTTI.MBReadInputs();
+		MAIN_TUTTI.MBReadRegisters();
+		
+		iStateHeartBeat := iStateHeartBeat+1;
+		iState := iNextState;
+	END_IF
+	
+	20:	
+	iStateName := '20, do stuff more';
+	iNextState := 100;
+	fbTON1(	IN:=TRUE,	PT:= tStateWait);
+	IF fbTON1.Q THEN
+	fbTON1(IN := FALSE);
+		//When timer clicks, do once:
+		
+		FBD_TUTTILINJASTO();	//nyt kokeiluna laittaa kaikki roippeet yhteen kivaan pötköön vain, myöhemmin täysin mahdollista pätkiä FBD:t pienempiin osiin
+		
+		iStateHeartBeat := iStateHeartBeat+1;
+		iState := iNextState;
+	END_IF		
+	
+	100: //WRITE MODBUS
+	iStateName := '100, Write Modbus';
+	iNextState := 0;
+	
+	fbTON1(	IN:=TRUE,	PT:= tStateWait);
+	IF fbTON1.Q THEN
+	fbTON1(IN := FALSE);
+		//When timer clicks, do once:
+
+		MAIN_TUTTI.MBWriteCoils();
+		MAIN_TUTTI.MBWriteRegisters();
+
+		iStateHeartBeat := iStateHeartBeat+1;
+		iState := iNextState;
+	END_IF
+
+ END_CASE]]></ST>
+    </Implementation>
+    <Action Name="MBReadInputs" Id="{8d5fd231-41cd-455d-830b-a7c225746e30}">
+      <Implementation>
+        <ST><![CDATA[IF NOT 	bModbusBusy1 THEN
+		bModbusBusy1	:= TRUE;
+fbMBReadInputs(
+	sIPAddr := ipAddr,
+	nTCPPort := 506,
+	nUnitID := 255,
+	nQuantity := 120,
+	nMBAddr := 0,
+	cbLength := SIZEOF(TIO.FIN),
+	pDestAddr := ADR(TIO.FIN),
+	bExecute := TRUE,
+	tTimeout := T#1S,
+	bBusy => ,
+	bError => ,
+	nErrId => ,
+	cbRead => ,
+ );
+ ELSE	//jos ModBusBusy ON päällä
+	IF NOT fbMBReadInputs.bBusy THEN	//tarkistetaan ettei bBusy ole päällä
+		bModbusBusy1	:= FALSE;		//ja mikäli bBusy ei ole päällä niin laitetaan ModbusBusy kans pois
+ 	END_IF
+ModbusHeartBeat := ModbusHeartBeat +1;
+fbMBReadInputs(bExecute := FALSE);
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="MBReadRegisters" Id="{d8cd6640-f6d4-4818-82fa-7203e985f29f}">
+      <Implementation>
+        <ST><![CDATA[IF NOT bModbusBusy4 THEN
+		bModbusBusy4 				:= TRUE;
+fbMBReadInputRegs (
+	sIPAddr := ipAddr,
+	nTCPPort := 506,
+	nUnitID := 255,
+	nQuantity := 32,
+	nMBAddr := 0,
+	cbLength := SIZEOF(TIO.FMIN),
+	pDestAddr := ADR(TIO.FMIN),
+	bExecute := TRUE,
+	tTimeout := T#1S,
+	bBusy => ,
+	bError => ,
+	nErrId => ,
+	cbRead => ,
+ );
+  ELSE
+	IF NOT fbMBReadInputRegs.bBusy THEN
+		bModbusBusy4	:= FALSE;
+ 	END_IF
+fbMBReadInputRegs(bExecute := FALSE);
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="MBWriteCoils" Id="{993f5ef6-60bf-44fe-ad04-bff6880309df}">
+      <Implementation>
+        <ST><![CDATA[IF NOT bModbusBusy2 THEN
+		bModbusBusy2	:= TRUE;
+fbMBWriteCoils(
+	sIPAddr := ipAddr,
+	nTCPPort := 506,
+	nUnitID := 255,
+	nQuantity := 120,
+	nMBAddr := 0,
+	cbLength := SIZEOF(TIO.FOUT),
+	pSrcAddr:= ADR(TIO.FOUT), 
+	bExecute := TRUE,
+	tTimeout := T#1S,
+	bBusy=> , 
+	bError=> , 
+	nErrId=>
+);
+ ELSE
+	IF NOT fbMBWriteCoils.bBusy THEN
+		bModbusBusy2	:= FALSE;
+ 	END_IF
+fbMBWriteCoils(bExecute := FALSE);
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="MBWriteRegisters" Id="{610d471b-6f9f-4221-9672-ff0114d7a792}">
+      <Implementation>
+        <ST><![CDATA[IF NOT bModbusBusy3 THEN
+		bModbusBusy3 				:= TRUE;
+fbMBWriteRegs(
+	sIPAddr := ipAddr,
+	nTCPPort := 506,
+	nUnitID := 255,
+	nQuantity := 32,
+	nMBAddr := 0,
+	cbLength := SIZEOF(TIO.FMOUT),
+	pSrcAddr:= ADR(TIO.FMOUT), 
+	bExecute := TRUE,
+	tTimeout := T#1S,
+	bBusy=> , 
+	bError=> , 
+	nErrId=>
+);
+ ELSE
+	IF NOT fbMBWriteRegs.bBusy THEN
+		bModbusBusy3				:= FALSE;
+ 	END_IF
+fbMBWriteRegs(bExecute := FALSE);
+
+END_IF
+
+
+//IF NOT bWriteRegs THEN
+// nValue[0]:= nValue[0]+1;
+// nValue[1]:= nValue[1]+1;
+// nValue[2]:= nValue[2]+1;
+// nValue[3]:= nValue[3]+1;
+
+// bWriteRegs :=TRUE;
+
+// fbWriteRegs.sIPAddr :=ipAddr;
+// fbWriteRegs.nQuantity := 4;
+// fbWriteRegs.nMBAddr := 16#3000;
+// fbWriteRegs.cbLength := SIZEOF(nValue);
+// fbWriteRegs.pSrcAddr := ADR(nValue);
+// fbWriteRegs.tTimeout := T#5s;
+// fbWriteRegs(bExecute:=TRUE);
+//ELSE
+// IF NOT fbWriteRegs.bBUSY THEN
+// bWriteRegs :=FALSE;
+//END_IF
+// fbWriteRegs(bExecute:=FALSE);
+//END_IF ]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="WAIT" Id="{0b7cf153-b125-40af-a371-121b5eb2ab4f}">
+      <Implementation>
+        <ST><![CDATA[//ACTION WAIT
+//Poistetaan testi-Action pois käytöstä.
+//On parempi pääkoodissa näkyä mitä tapahtuu, ja tämä funktio selkeästi muuttuu jatkuvasti
+
+//fbTON1(	IN:=TRUE,
+//		PT:= tWaitTime);
+//	IF fbTON1.Q THEN
+//		fbTON1(IN := FALSE);
+//		iStateCounter := iStateCounter+1;
+//		iState := iNextState;
+//	END_IF
+		]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="MAIN_TUTTI">
+      <LineId Id="485" Count="58" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN_TUTTI.MBReadInputs">
+      <LineId Id="2" Count="20" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN_TUTTI.MBReadRegisters">
+      <LineId Id="2" Count="21" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN_TUTTI.MBWriteCoils">
+      <LineId Id="2" Count="1" />
+      <LineId Id="5" Count="19" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN_TUTTI.MBWriteRegisters">
+      <LineId Id="2" Count="21" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="25" Count="21" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN_TUTTI.WAIT">
+      <LineId Id="2" Count="10" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

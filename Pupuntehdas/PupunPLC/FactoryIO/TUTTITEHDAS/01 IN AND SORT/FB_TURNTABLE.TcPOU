@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_TURNTABLE" Id="{1d96fec3-cb37-42e2-b766-5aa236e61241}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TURNTABLE
+VAR_INPUT
+	IN :		BOOL;
+	Limit90 :		BOOL;
+	Limit0 :		BOOL;
+	BackLimit :		BOOL;
+	FrontLimit :	BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	Q :		BOOL;
+	Go :	BOOL;
+	Status : 	STRING;
+	RollPlus :	BOOL;
+	RollMinus :	BOOL;
+	Turn :		BOOL;
+
+	
+	//Feeding rollers
+	FeedIn1 : BOOL;
+	FeedOut1 : BOOL;
+	FeedOut2 : BOOL;
+END_VAR
+VAR
+	iState: INT;
+	fbTON : TON;	
+	
+	fbTON2: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := TRUE;
+END_IF
+
+CASE iState OF
+	
+0: //idle
+	Status := 		'0 - Idle';
+	RollPlus := 	FALSE;
+	RollMinus := 	FALSE;
+	Turn :=			FALSE;
+	FeedIn1 :=		FALSE;
+	IF Q THEN 
+	iState := 10;	
+	END_IF
+	
+10: //receive
+	Status := 		'10 - Receive';
+	FeedIn1 := 	TRUE;
+	RollPlus := TRUE;
+	IF FrontLimit THEN
+		iState := 20;
+	END_IF
+	
+20: //stop and turn
+	Status := 		'20 - Turn';
+	FeedIn1 :=	FALSE;
+	RollPlus := FALSE;
+	Turn := 	TRUE;
+	IF Limit90 THEN
+		iState := 	30;
+	END_IF
+	
+30: //feed out
+	Status := 		'30 - Feed out and wait 1s';
+	RollMinus := 	TRUE;
+	Go := 			TRUE;
+	fbTON2(IN := TRUE, PT := T#1000MS);
+	IF fbTON2.Q THEN fbTON2(IN := FALSE);
+		IF NOT BackLimit THEN
+		fbTON(IN := TRUE, PT := T#1000MS);
+			IF fbTON.Q THEN	fbTON(IN := FALSE);
+				Turn := 	FALSE;
+				RollMinus := FALSE;
+				iState := 	40;
+			END_IF
+		END_IF
+	END_IF
+	
+40: //going back to start
+	Status := 		'40 - Back to start';
+	Go := 			FALSE;
+	IF Limit0 THEN
+		iState := 10;
+	END_IF
+
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TURNTABLE">
+      <LineId Id="343" Count="40" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="431" Count="1" />
+      <LineId Id="385" Count="1" />
+      <LineId Id="388" Count="2" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="391" Count="1" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="393" Count="6" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

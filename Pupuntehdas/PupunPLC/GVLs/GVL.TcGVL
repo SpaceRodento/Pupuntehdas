@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL" Id="{23cebf7c-3ad4-42c6-97b5-ffbc3f72d417}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+
+VAR_GLOBAL
+	
+//	IO_Module_1 : IOModuleData;
+//	IO_Temperature	AT %I*: 	TemperatureData;
+{attribute 'OPC.UA.DA' := '3'}
+	cIO_Out			AT %Q*:		ARRAY[1..4] OF BOOL;	
+	cIO_In			AT %I*:		ARRAY[1..4] OF BOOL;	
+	
+	
+// Link 'useless' variables to IO
+	EthercatDevState 	AT%I*: UINT;
+	Term2DevState 		AT%I*: UINT;
+	EthercatDevCtrl 	AT%Q*: UINT;
+	EthercatDev1		AT%I*: UINT;
+	EthercatDev2		AT%I*: UINT;
+	EthercatDev3		AT%I*: UINT;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

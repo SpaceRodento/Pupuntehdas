@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_STACKER" Id="{c629e881-ec07-4a5b-be72-0e8eebdad781}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_STACKER
+VAR_INPUT
+	IN : 	BOOL;
+	X_NextPalletGoesTo : INT := 1;	//Desired X-cell coordinate for next pallet
+	Z_NextPalletGoesTo : INT := 1; 	//Desired Z-cell coordinate for next pallet
+	Raise : BOOL;
+	X_Position : WORD;	//Current pos reported from stacker
+	Z_Position : WORD;	//Current pos reported from stacker
+	Sensor :	BOOL;
+	LeftLimit : BOOL;
+	RightLimit : BOOL;
+	MiddleLimit : 	BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	Q : 	BOOL;
+	Status: STRING;
+	Busy : BOOL; 	//Signal that all clear when not true
+	Set_X :	WORD;	//output coords to stacker
+	Set_Z : WORD;	//output coords to stacker
+	Left : 	BOOL;			//For loading/unloading pallet into device
+	Right :	BOOL;			//For loading/unloading pallet into device
+	Infeed : BOOL;			//Loading conveyor
+	
+	//Display stuff
+		Display_X: WORD;	//Convenience display of coordinates
+		Display_Z: WORD;	//Convenience display of coordinates
+		Display_XCell : WORD;	//Convenience display of calculated cell
+		Display_ZCell : WORD;	//Convenience display of calculated cell
+	
+END_VAR
+VAR
+	XCell : INT;	//X Cell number. Calculate coords from this
+	ZCell : INT;	//Z Cell number. Calculate coords from this
+	//Variables
+		XSpace : INT	:= 107;		//104 Spacing in X-direction
+		XOffset: INT	:= 144;		//offset //150;
+		
+		ZSpace : INT	:= 170;		//170
+		ZOffset: INT	:= 30;		//30 
+		Raise_Amount: 	INT;	//Changes in response to Raise:BOOL
+		Raise_Amount_Variable : INT := 50;
+
+	iState: INT;
+	Raise_Wait :	TIME := T#1000MS;
+	LoadWaiting: BOOL;
+	fbTON: TON;
+
+	X_NextPalletGoesTo_Var: INT := 1;
+	Z_NextPalletGoesTo_Var: INT := 1;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := TRUE;	
+END_IF
+
+//To Actions or Methods?
+//=======================================
+	
+	Display_X := Set_X;
+	Display_Z := Set_Z;
+	Display_XCell := TO_WORD(XCell);
+	Display_ZCell := TO_WORD(ZCell);
+
+//CALCULATIONS. Goes to start pos when coordinates are out of bound. Otherwise converts XCell to set-X coordinates for stacker machinen
+	IF XCell = 0 THEN
+		Set_X := TO_WORD(0);
+		ELSE
+		IF XCell >= 10 OR XCell < 0 THEN
+			XCell := 0;
+			ELSE
+			Set_X := TO_WORD((XCell-1)*XSpace+XOffset);
+		END_IF
+	END_IF
+	
+	IF ZCell = 0 THEN
+		Set_Z := TO_WORD(0+Raise_Amount);
+		ELSE
+			IF ZCell >= 7 OR ZCell < 0 THEN
+				ZCell := 0;
+				ELSE
+				Set_Z := TO_WORD(
+				((ZCell-1) *ZSpace) +ZOffset +Raise_Amount
+				); 
+			END_IF
+	END_IF
+	
+//Raise = 50 higher when true. Variable in ZCell calculations
+	IF NOT Raise THEN
+		Raise_Amount := 0;
+		ELSE
+			Raise_Amount := Raise_Amount_Variable;
+	END_IF
+
+//Feed in
+	IF NOT Sensor THEN
+		Infeed := 		TRUE;
+	//	LoadWaiting := 	FALSE;
+		ELSE
+			Infeed := 		FALSE;
+			LoadWaiting := 	TRUE;
+	END_IF
+
+//=============================================
+
+	
+CASE iState OF
+0 : //Idle
+	Status := '0 - Idle. Waiting for power';
+	IF Q THEN
+		iState := 10;
+		FeikkiHyllyttaja();
+	END_IF
+10 : //Start pos, Busy off if everything in 0, feed in
+	Status := '10 - Start pos. All to home positions';
+	IF X_Position = 0 AND Z_Position = 0 AND MiddleLimit THEN
+	Busy := 	FALSE;
+	iState := 	20;
+	ELSE
+		Busy := 	TRUE;
+	END_IF
+
+	IF NOT MiddleLimit THEN		//tarkoitus olisi tuoda kelkka sisään, sitten vasta liikkua
+		Left := 	FALSE;
+		Right :=	FALSE;
+	ELSE 
+		XCell := 	0;
+		ZCell := 	0;
+	END_IF
+	
+20 : //Load arrived, if all ok then proceed. Busy on
+	Status := '20 - Waiting on pallet AND storage cell coordinates';
+	IF LoadWaiting AND X_NextPalletGoesTO >= 1 THEN	
+		Left := 	TRUE;
+		iState := 	30;
+		Busy :=		TRUE;
+	END_IF
+30 : //Action time. Raise load
+	Status := '30 - Pallet arrived. Picking up';
+	IF LeftLimit THEN
+		Raise := 	TRUE;
+		fbTON(IN := TRUE, PT := Raise_Wait);
+		IF fbTON.Q THEN		fbTON(IN := FALSE);
+			Left :=			FALSE;
+			LoadWaiting := 	FALSE;
+			iState := 		40;
+		END_IF
+	END_IF
+40 : //Skiddledoo to right cell
+	Status := '40 - Skiddledoo to correct cell coordinates';
+	IF MiddleLimit THEN
+		XCell := X_NextPalletGoesTo;	
+		ZCell := Z_NextPalletGoesTo;	//pitää voida myös nollata nämä kun lava viety
+		iState := 50;
+	END_IF
+50 : //Feed out load
+	Status := '50 - Feeding pallet to storage';
+	IF X_Position >= (Set_X-20) AND Z_Position >= (Set_Z-20) THEN
+		X_NextPalletGoesTo := 0;
+		Z_NextPalletGoesTo := 0;
+		Right := 	TRUE;
+		iState := 	60;
+	END_IF
+60 : //Skaddledoo back to start
+	Status := '60 - Lower and retract';
+	IF RightLimit THEN
+		Raise := 	FALSE;
+		fbTON(IN := TRUE, PT := Raise_Wait);
+	END_IF
+	
+	IF fbTON.Q THEN 	fbTON(IN := FALSE);
+		Right := 	FALSE;
+		iState := 	70;
+	END_IF
+70 : //
+	Status := '70 - Skaddledoo back to home pos';
+	IF MiddleLimit THEN
+			iState := 	0;
+	END_IF
+
+END_CASE]]></ST>
+    </Implementation>
+    <Action Name="FeikkiHyllyttaja" Id="{31182eea-25aa-4da5-9761-acc7ca378615}">
+      <Implementation>
+        <ST><![CDATA[
+//IF X_NextPalletGoesTo_var >= 10 THEN
+//	X_NextPalletGoesTo_Var := 1;
+//	Z_NextPalletGoesTo_var := Z_NextPalletGoesTo_var+1;
+//END_IF
+
+//IF Z_NextPalletGoesTo_var >= 7 THEN
+//	Z_NextPalletGoesTo_var := 1;
+//END_IF
+
+IF X_NextPalletGoesTo <= 0 THEN
+		X_NextPalletGoesTo_var := 	X_NextPalletGoesTo_var+1;
+	IF X_NextPalletGoesTo_var >= 10 OR X_NextPalletGoesTo_var <= 0 THEN
+		X_NextPalletGoesTo_Var := 1;
+		Z_NextPalletGoesTo_var := Z_NextPalletGoesTo_var+1;
+	IF Z_NextPalletGoesTo_var >= 7 THEN
+			Z_NextPalletGoesTo_var := 1;
+	END_IF
+	END_IF
+END_IF
+		X_NextPalletGoesTo := 		X_NextPalletGoesTo_var;
+		Z_NextPalletGoesTo := 		Z_NextPalletGoesTo_var;
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_STACKER">
+      <LineId Id="987" Count="32" />
+      <LineId Id="1119" Count="0" />
+      <LineId Id="1126" Count="0" />
+      <LineId Id="1020" Count="5" />
+      <LineId Id="1125" Count="0" />
+      <LineId Id="1027" Count="19" />
+      <LineId Id="1179" Count="0" />
+      <LineId Id="1047" Count="30" />
+      <LineId Id="1079" Count="20" />
+      <LineId Id="1101" Count="3" />
+      <LineId Id="1109" Count="0" />
+      <LineId Id="1124" Count="0" />
+      <LineId Id="1121" Count="2" />
+      <LineId Id="1120" Count="0" />
+      <LineId Id="1110" Count="5" />
+      <LineId Id="406" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STACKER.FeikkiHyllyttaja">
+      <LineId Id="2" Count="0" />
+      <LineId Id="6" Count="2" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="42" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

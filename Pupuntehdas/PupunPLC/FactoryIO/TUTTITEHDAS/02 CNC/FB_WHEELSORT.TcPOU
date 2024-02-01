@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.6">
+  <POU Name="FB_WHEELSORT" Id="{e63396b4-bf57-4c2d-a084-93af0585fdaf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WHEELSORT
+VAR_INPUT
+	IN : 	BOOL;
+	Sensor : BOOL;
+END_VAR
+VAR_OUTPUT
+	Q :			BOOL;
+	Plus :	BOOL;
+	Left :	BOOL;
+	Right :	BOOL;
+END_VAR
+VAR
+	iState: INT;
+	rTRIG : R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT IN THEN
+	Q := FALSE;
+	iState := 0;
+	ELSE
+		Q := 	TRUE;
+		Plus := TRUE;
+END_IF
+
+//Nyt vain latoo yksi kerrallaan linjoille
+//Myöhemmän ajan puuha tutkia jonotilanne ja sen mukaan päättää
+
+CASE iState OF
+0 : //Suoraan
+	Left := 	FALSE;
+	Right := 	FALSE;	
+
+	rTRIG(CLK := Sensor);
+	IF rTRIG.Q THEN
+		iState := 1;
+	END_IF
+1 : //Vasen
+	Left := 	TRUE;
+	Right := 	FALSE;
+
+	rTRIG(CLK:=Sensor);
+	IF rTRIG.Q THEN
+		iState := 2;
+	END_IF
+2 : //Oikea
+	Left := 	FALSE;
+	Right := 	TRUE;
+		
+	rTRIG(CLK:=Sensor);
+	IF rTRIG.Q THEN
+		iState := 0;
+	END_IF
+	
+END_CASE
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_WHEELSORT">
+      <LineId Id="352" Count="4" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="357" Count="5" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="454" Count="0" />
+      <LineId Id="453" Count="0" />
+      <LineId Id="365" Count="5" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="450" Count="0" />
+      <LineId Id="449" Count="0" />
+      <LineId Id="374" Count="4" />
+      <LineId Id="452" Count="0" />
+      <LineId Id="381" Count="2" />
+      <LineId Id="385" Count="4" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
